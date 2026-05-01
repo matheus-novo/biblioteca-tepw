@@ -1,6 +1,7 @@
 CREATE TABLE autores (
     id BIGSERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
+    titulacao VARCHAR (100),
     biografia TEXT,
     nacionalidade VARCHAR(100)
 );
@@ -19,7 +20,6 @@ CREATE TABLE livros (
     isbn VARCHAR(20) UNIQUE,
     titulo VARCHAR(255) NOT NULL,
     resumo TEXT,
-    area VARCHAR(50),
     ano_publicacao INTEGER,
     url_download VARCHAR(255),
     editora_id BIGINT REFERENCES editoras(id)
@@ -28,9 +28,8 @@ CREATE TABLE livros (
 CREATE TABLE acessos (
     id BIGSERIAL PRIMARY KEY,
     data_acesso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ip_origem VARCHAR(50),
     dispositivo VARCHAR(50),
-    duracao_segundos INTEGER,
+    aluno_id BIGINT REFERENCES alunos(id),
     livro_id BIGINT REFERENCES livros(id)
 );
 
@@ -48,3 +47,28 @@ CREATE TABLE livro_autor (
     autor_id BIGINT REFERENCES autores(id),
     PRIMARY KEY (livro_id, autor_id)
 );
+
+CREATE TABLE disciplinas (
+    id BIGSERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    codigo VARCHAR(50) UNIQUE,
+    curso VARCHAR(100),
+    semestre INTEGER,
+    ementa TEXT
+);
+
+CREATE TABLE disciplina_livro (
+    disciplina_id BIGINT REFERENCES disciplinas(id),
+    livro_id BIGINT REFERENCES livros(id),
+    PRIMARY KEY (disciplina_id, livro_id)
+);
+
+CREATE TABLE alunos (
+    id BIGSERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    matricula VARCHAR(50) UNIQUE NOT NULL,
+    curso VARCHAR(100),
+    email VARCHAR(150),
+    data_ingresso DATE
+);
+
