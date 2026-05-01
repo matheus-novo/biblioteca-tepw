@@ -5,30 +5,33 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
 @Entity
 @Table(name = "livros")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Livro {
-
-    public enum AreaConhecimento {
-        TECNOLOGIA, BIOLOGIA, DIREITO, FILOSOFIA, ENGENHARIA, SAUDE, AGRONOMIA, MATEMATICA, LINGUAGENS
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(unique = true, length = 20)
     private String isbn;
+
+    @Column(nullable = false, length = 255)
     private String titulo;
+
+    @Column(columnDefinition = "TEXT")
     private String resumo;
+
     private Integer anoPublicacao;
 
-    @Enumerated(EnumType.STRING)
-    private AreaConhecimento area;
+    @Column(length = 255)
+    private String urlDownload;
+
+    @ManyToOne
+    @JoinColumn(name = "editora_id")
+    private Editora editora;
 
     @ManyToMany
     @JoinTable(
@@ -37,4 +40,7 @@ public class Livro {
         inverseJoinColumns = @JoinColumn(name = "autor_id")
     )
     private List<Autor> autores;
+
+    @ManyToMany(mappedBy = "livrosRecomendados")
+    private List<Disciplina> disciplinas;
 }

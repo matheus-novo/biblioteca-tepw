@@ -1,32 +1,31 @@
 package com.biblioteca.api_publica.domain.model;
-import java.util.List;
+import java.time.LocalDate;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "autores")
+@Table(name = "alunos")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class Autor {
-@Id
+@NoArgsConstructor
+public class Aluno {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 255)
     private String nome;
 
-    @Column(length = 100)
-    private String titulacao;
-
-    @Column(columnDefinition = "TEXT")
-    private String biografia;
+    @Column(nullable = false, unique = true, length = 50)
+    private String matricula;
 
     @Column(length = 100)
-    private String nacionalidade;
+    private String curso;
 
-    @ManyToMany(mappedBy = "autores")
-    private List<Livro> livros;
+    @Column(length = 150)
+    private String email;
+
+    private LocalDate dataIngresso;
 }
