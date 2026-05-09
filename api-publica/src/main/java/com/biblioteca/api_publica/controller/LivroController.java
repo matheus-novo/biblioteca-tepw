@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/livros") 
+@RequestMapping("/api/v1/livros")
 @Tag(name = "Livros", description = "Gestão do acervo da biblioteca digital")
 public class LivroController {
 
@@ -62,5 +62,11 @@ public class LivroController {
     @GetMapping("/pesquisa")
     public ResponseEntity<List<LivroDTO>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(service.searchByResumo(keyword));
+    }
+
+    @GetMapping("/top10")
+    @Operation(summary = "Lista os 10 livros melhor avaliados pelos alunos")
+    public ResponseEntity<List<LivroDTO>> getTop10() {
+        return ResponseEntity.ok(service.getTop10Books());
     }
 }

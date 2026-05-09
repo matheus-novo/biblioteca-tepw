@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @AllArgsConstructor
@@ -20,11 +21,15 @@ public class LivroDTO {
     private Integer anoPublicacao;
     private String urlDownload;
 
-    // Campos para IDs (usados no cadastro/Request)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long editoraId;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Long> autorIds;
 
-    // Campos para nomes (usados na Resposta/Response)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String nomeEditora;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> nomesAutores;
 }

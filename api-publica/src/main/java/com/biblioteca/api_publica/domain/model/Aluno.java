@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Entity
 @Table(name = "alunos")
@@ -28,4 +29,12 @@ public class Aluno {
     private String email;
 
     private LocalDate dataIngresso;
+
+    @ManyToMany
+    @JoinTable(
+        name = "aluno_disciplina",
+        joinColumns = @JoinColumn(name = "aluno_id"),
+        inverseJoinColumns = @JoinColumn(name = "disciplina_id")
+    )
+    private List<Disciplina> disciplinas;
 }

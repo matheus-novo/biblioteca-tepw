@@ -1,4 +1,5 @@
 package com.biblioteca.api_publica.service;
+
 import com.biblioteca.api_publica.domain.dto.LivroDTO;
 import com.biblioteca.api_publica.domain.model.Livro;
 import com.biblioteca.api_publica.exceptions.ApiException;
@@ -9,6 +10,8 @@ import com.biblioteca.utils.MapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 
 @Service
@@ -38,7 +41,7 @@ public class LivroService {
         // 3. Persistência
         var modelPersist = repository.save(model);
 
-        // 4. Retorna convertido para DTO 
+        // 4. Retorna convertido para DTO
         return MapperUtil.parseObject(modelPersist, LivroDTO.class);
     }
 
@@ -66,11 +69,10 @@ public class LivroService {
     public LivroDTO update(Long id, LivroDTO dto) {
         // 1. Verifica se o livro existe no banco
         Livro livroExistente = repository.findById(id)
-            .orElseThrow(() -> new ApiException(
-            HttpStatus.NOT_FOUND, 
-            "biblioteca.service.livro.notfound", 
-            "Livro de ID " + id + " não localizado"
-        ));
+                .orElseThrow(() -> new ApiException(
+                        HttpStatus.NOT_FOUND,
+                        "biblioteca.service.livro.notfound",
+                        "Livro de ID " + id + " não localizado"));
 
         // 2. Atualiza os campos simples
         livroExistente.setTitulo(dto.getTitulo());
@@ -81,7 +83,7 @@ public class LivroService {
 
         // 3. Atualiza os relacionamentos (Busca as novas entidades pelos IDs do DTO)
         var novaEditora = editoraRepository.findById(dto.getEditoraId())
-            .orElseThrow(() -> new RuntimeException("Editora não encontrada"));
+                .orElseThrow(() -> new RuntimeException("Editora não encontrada"));
         var novosAutores = autorRepository.findAllById(dto.getAutorIds());
 
         livroExistente.setEditora(novaEditora);
@@ -90,7 +92,14 @@ public class LivroService {
         // 4. Salva a entidade atualizada
         Livro livroAtualizado = repository.save(livroExistente);
 
-        // 5. Retorna o DTO convertido via MapperUtil 
+        // 5. Retorna o DTO convertido via MapperUtil
         return MapperUtil.parseObject(livroAtualizado, LivroDTO.class);
+    }
+
+    public List<LivroDTO> getTop10Books() {
+        // PageRequest.of(página, tamanho)
+        Pageable topTen = PageRequest.of(0, 10);
+        List<Livro> livros = repository.findTopRatedBooks(topTen);
+        return MapperUtil.parseListObjects(livros, LivroDTO.class);
     }
 }

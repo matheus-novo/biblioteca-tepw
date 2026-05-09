@@ -1,4 +1,5 @@
 package com.biblioteca.api_publica.domain.model;
+
 import java.util.List;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,12 +34,11 @@ public class Livro {
     @JoinColumn(name = "editora_id")
     private Editora editora;
 
+    @OneToMany(mappedBy = "livro")
+    private List<Avaliacao> avaliacoes;
+
     @ManyToMany
-    @JoinTable(
-        name = "livro_autor",
-        joinColumns = @JoinColumn(name = "livro_id"),
-        inverseJoinColumns = @JoinColumn(name = "autor_id")
-    )
+    @JoinTable(name = "livro_autor", joinColumns = @JoinColumn(name = "livro_id"), inverseJoinColumns = @JoinColumn(name = "autor_id"))
     private List<Autor> autores;
 
     @ManyToMany(mappedBy = "livrosRecomendados")
