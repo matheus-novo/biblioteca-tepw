@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/livros") // Versionamento por Path
+@RequestMapping("/api/v1/livros") 
 @Tag(name = "Livros", description = "Gestão do acervo da biblioteca digital")
 public class LivroController {
 
