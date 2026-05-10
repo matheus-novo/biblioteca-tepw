@@ -2,6 +2,8 @@ package com.biblioteca.api_publica.service;
 
 import com.biblioteca.api_publica.domain.dto.AlunoDTO;
 import com.biblioteca.api_publica.domain.model.Aluno;
+import com.biblioteca.api_publica.domain.model.Autor;
+import com.biblioteca.api_publica.domain.model.Disciplina;
 import com.biblioteca.api_publica.exceptions.ApiException;
 import com.biblioteca.api_publica.repository.AlunoRepository;
 import com.biblioteca.api_publica.domain.model.Livro;
@@ -12,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.util.List;
-
 
 @Service
 public class AlunoService {
@@ -30,17 +31,42 @@ public class AlunoService {
             model.setDisciplinas(disciplinaRepository.findAllById(dto.getDisciplinaIds()));
         }
 
-        return MapperUtil.parseObject(repository.save(model), AlunoDTO.class);
+        AlunoDTO dtoRetorno = MapperUtil.parseObject(repository.save(model), AlunoDTO.class);
+
+        if (model.getDisciplinas() != null) {
+            dtoRetorno.setNomesDisciplinas(model.getDisciplinas().stream().map(Disciplina::getNome).toList());
+        }
+
+        return dtoRetorno;
     }
 
     public List<AlunoDTO> findAll() {
-        return MapperUtil.parseListObjects(repository.findAll(), AlunoDTO.class);
+        List<Aluno> alunos = repository.findAll();
+
+        return alunos.stream().map(aluno -> {
+            AlunoDTO dto = MapperUtil.parseObject(aluno, AlunoDTO.class);
+
+            // Ponte manual: de List<Disciplina> para List<String>
+            if (aluno.getDisciplinas() != null) {
+                dto.setNomesDisciplinas(aluno.getDisciplinas().stream()
+                        .map(Disciplina::getNome)
+                        .toList());
+            }
+
+            return dto;
+        }).toList();
     }
 
     public AlunoDTO findById(Long id) {
         Aluno model = repository.findById(id)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "aluno.notfound", "Aluno não encontrado"));
-        return MapperUtil.parseObject(model, AlunoDTO.class);
+        AlunoDTO dtoRetorno = MapperUtil.parseObject(model, AlunoDTO.class);
+
+        if (model.getDisciplinas() != null) {
+            dtoRetorno.setNomesDisciplinas(model.getDisciplinas().stream().map(Disciplina::getNome).toList());
+        }
+
+        return dtoRetorno;
     }
 
     public AlunoDTO update(Long id, AlunoDTO dto) {
@@ -55,7 +81,13 @@ public class AlunoService {
             existente.setDisciplinas(disciplinaRepository.findAllById(dto.getDisciplinaIds()));
         }
 
-        return MapperUtil.parseObject(repository.save(existente), AlunoDTO.class);
+        AlunoDTO dtoRetorno = MapperUtil.parseObject(repository.save(existente), AlunoDTO.class);
+
+        if (existente.getDisciplinas() != null) {
+            dtoRetorno.setNomesDisciplinas(existente.getDisciplinas().stream().map(Disciplina::getNome).toList());
+        }
+
+        return dtoRetorno;
     }
 
     public void delete(Long id) {
@@ -65,16 +97,33 @@ public class AlunoService {
     }
 
     public List<LivroDTO> getRecomendacoes(Long alunoId) {
+        // 1. Localiza o aluno
         Aluno aluno = repository.findById(alunoId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "aluno.notfound", "Aluno não encontrado"));
 
-        // 2. Navega: Aluno -> Disciplinas -> Livros Recomendados
+        // 2. Coleta os livros das disciplinas
         List<Livro> livrosRecomendados = aluno.getDisciplinas().stream()
                 .flatMap(disciplina -> disciplina.getLivrosRecomendados().stream())
                 .distinct()
                 .toList();
 
-        // 3. Converte para DTO
-        return MapperUtil.parseListObjects(livrosRecomendados, LivroDTO.class);
+        // 3. Converte para DTO com o mapeamento manual dos nomes
+        return livrosRecomendados.stream().map(livro -> {
+            LivroDTO dto = MapperUtil.parseObject(livro, LivroDTO.class);
+
+            // Mapeamento manual de Autores
+            if (livro.getAutores() != null) {
+                dto.setNomesAutores(livro.getAutores().stream()
+                        .map(Autor::getNome)
+                        .toList());
+            }
+
+            // Mapeamento manual da Editora
+            if (livro.getEditora() != null) {
+                dto.setNomeEditora(livro.getEditora().getNome());
+            }
+
+            return dto;
+        }).toList();
     }
 }

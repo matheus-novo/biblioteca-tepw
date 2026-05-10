@@ -1,6 +1,7 @@
 package com.biblioteca.api_publica.service;
 
 import com.biblioteca.api_publica.domain.dto.LivroDTO;
+import com.biblioteca.api_publica.domain.model.Autor;
 import com.biblioteca.api_publica.domain.model.Livro;
 import com.biblioteca.api_publica.exceptions.ApiException;
 import com.biblioteca.api_publica.repository.LivroRepository;
@@ -42,18 +43,30 @@ public class LivroService {
         var modelPersist = repository.save(model);
 
         // 4. Retorna convertido para DTO
-        return MapperUtil.parseObject(modelPersist, LivroDTO.class);
+        return complementarDTO(modelPersist);
     }
 
     public List<LivroDTO> findAll() {
-        var livros = repository.findAll();
-        return MapperUtil.parseListObjects(livros, LivroDTO.class);
+        List<Livro> livros = repository.findAll();
+
+        return livros.stream().map(livro -> {
+            LivroDTO dto = MapperUtil.parseObject(livro, LivroDTO.class);
+
+            // Mapeamento manual dos nomes dos autores
+            if (livro.getAutores() != null) {
+                dto.setNomesAutores(livro.getAutores().stream()
+                        .map(Autor::getNome)
+                        .toList());
+            }
+
+            return dto;
+        }).toList();
     }
 
     public LivroDTO findById(Long id) {
         var model = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
-        return MapperUtil.parseObject(model, LivroDTO.class);
+        return complementarDTO(model);
     }
 
     public void delete(Long id) {
@@ -63,7 +76,18 @@ public class LivroService {
     // Funcionalidade Extra: Busca por resumo
     public List<LivroDTO> searchByResumo(String keyword) {
         var livros = repository.searchByResumo(keyword);
-        return MapperUtil.parseListObjects(livros, LivroDTO.class);
+        return livros.stream().map(livro -> {
+            LivroDTO dto = MapperUtil.parseObject(livro, LivroDTO.class);
+
+            // Mapeamento manual de Autores
+            if (livro.getAutores() != null) {
+                dto.setNomesAutores(livro.getAutores().stream()
+                        .map(Autor::getNome)
+                        .toList());
+            }
+
+            return dto;
+        }).toList();
     }
 
     public LivroDTO update(Long id, LivroDTO dto) {
@@ -93,13 +117,38 @@ public class LivroService {
         Livro livroAtualizado = repository.save(livroExistente);
 
         // 5. Retorna o DTO convertido via MapperUtil
-        return MapperUtil.parseObject(livroAtualizado, LivroDTO.class);
+        return complementarDTO(livroAtualizado);
     }
 
     public List<LivroDTO> getTop10Books() {
         // PageRequest.of(página, tamanho)
         Pageable topTen = PageRequest.of(0, 10);
         List<Livro> livros = repository.findTopRatedBooks(topTen);
-        return MapperUtil.parseListObjects(livros, LivroDTO.class);
+        return livros.stream().map(livro -> {
+            LivroDTO dto = MapperUtil.parseObject(livro, LivroDTO.class);
+
+            // Mapeamento manual de Autores
+            if (livro.getAutores() != null) {
+                dto.setNomesAutores(livro.getAutores().stream()
+                        .map(Autor::getNome)
+                        .toList());
+            }
+
+            return dto;
+        }).toList();
+    }
+
+    private LivroDTO complementarDTO(Livro livro) {
+        LivroDTO dto = MapperUtil.parseObject(livro, LivroDTO.class);
+
+        if (livro.getAutores() != null) {
+            dto.setNomesAutores(livro.getAutores().stream().map(Autor::getNome).toList());
+        }
+
+        if (livro.getEditora() != null) {
+            dto.setNomeEditora(livro.getEditora().getNome());
+        }
+
+        return dto;
     }
 }
