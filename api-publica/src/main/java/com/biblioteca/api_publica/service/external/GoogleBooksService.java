@@ -26,6 +26,7 @@ public class GoogleBooksService {
             // Se a API falhar, o sistema não deve parar. Apenas logamos.
             System.err.println("Erro ao consultar Google Books: " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
         return null;
     }

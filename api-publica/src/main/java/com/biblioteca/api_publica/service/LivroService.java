@@ -7,6 +7,7 @@ import com.biblioteca.api_publica.domain.model.Livro;
 import com.biblioteca.api_publica.exceptions.ApiException;
 import com.biblioteca.api_publica.repository.LivroRepository;
 import com.biblioteca.api_publica.service.external.GoogleBooksService;
+import com.biblioteca.api_publica.service.external.OpenLibraryService;
 import com.biblioteca.api_publica.repository.EditoraRepository;
 import com.biblioteca.api_publica.repository.AutorRepository;
 import com.biblioteca.utils.MapperUtil;
@@ -32,23 +33,13 @@ public class LivroService {
     @Autowired
     private GoogleBooksService googleBooksService;
 
+    @Autowired
+    private OpenLibraryService openLibraryService;
+
     public LivroDTO create(LivroDTO dto) {
 
-        if (dto.getIsbn() != null && (dto.getTitulo() == null || dto.getResumo() == null)) {
-            var infoExterna = googleBooksService.buscarDadosPorIsbn(dto.getIsbn());
-            System.out.println(infoExterna);
-            if (infoExterna != null) {
-                // So preenche se o usuario não enviou manualmente
-                if (dto.getTitulo() == null)
-                    dto.setTitulo(infoExterna.getTitle());
-                if (dto.getResumo() == null)
-                    dto.setResumo(infoExterna.getDescription());
-
-                if (dto.getAnoPublicacao() == null && infoExterna.getPublishedDate() != null) {
-                    String ano = infoExterna.getPublishedDate().substring(0, 4);
-                    dto.setAnoPublicacao(Integer.parseInt(ano));
-                }
-            }
+        if (dto.getIsbn() != null && (dto.getTitulo() == null || dto.getTitulo().isBlank())) {
+            preencherMetadadosExternos(dto);
         }
 
         if (dto.getTitulo() == null || dto.getTitulo().isBlank()) {
@@ -175,5 +166,50 @@ public class LivroService {
         }
 
         return dto;
+    }
+
+    private void preencherMetadadosExternos(LivroDTO dto) {
+        // 1. TENTATIVA GOOGLE
+        var infoGoogle = googleBooksService.buscarDadosPorIsbn(dto.getIsbn());
+        if (infoGoogle != null) {
+            if (dto.getTitulo() == null)
+                dto.setTitulo(infoGoogle.getTitle());
+            if (dto.getResumo() == null)
+                dto.setResumo(infoGoogle.getDescription());
+            if (dto.getAnoPublicacao() == null) {
+                dto.setAnoPublicacao(extrairAno(infoGoogle.getPublishedDate()));
+            }
+            return;
+        }
+
+        // 2. TENTATIVA OPEN LIBRARY (PLANO B)
+        System.out.println("Google falhou. Tentando Open Library...");
+        String[] infoOL = openLibraryService.buscarDadosCompletos(dto.getIsbn());
+        if (infoOL != null) {
+            if (dto.getTitulo() == null)
+                dto.setTitulo(infoOL[0]);
+            if (dto.getResumo() == null)
+                dto.setResumo(infoOL[1]);
+            if (dto.getAnoPublicacao() == null) {
+                dto.setAnoPublicacao(extrairAno(infoOL[2]));
+            }
+        }
+    }
+
+    /**
+     * Utilitário para extrair 4 dígitos consecutivos de uma string (o ano).
+     * Ex: "Apr 10, 2019" -> 2019 ou "2019-05-10" -> 2019
+     */
+    private Integer extrairAno(String data) {
+        if (data == null || data.isBlank())
+            return null;
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\d{4}");
+        java.util.regex.Matcher matcher = pattern.matcher(data);
+
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group());
+        }
+        return null;
     }
 }
