@@ -1,4 +1,5 @@
 package com.biblioteca.api_publica.domain.dto;
+
 import java.util.List;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ public class LivroDTO {
 
     private Long id;
 
-    @NotBlank(message = "O título é obrigatório")
+    //@NotBlank(message = "O título é obrigatório")
     private String titulo;
 
     private String isbn;
@@ -32,4 +33,7 @@ public class LivroDTO {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> nomesAutores;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Double mediaAvaliacao;
 }
