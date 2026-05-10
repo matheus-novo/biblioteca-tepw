@@ -34,7 +34,7 @@ public class Livro {
     @JoinColumn(name = "editora_id")
     private Editora editora;
 
-    @OneToMany(mappedBy = "livro")
+    @OneToMany(mappedBy = "livro", fetch = FetchType.EAGER)
     private List<Avaliacao> avaliacoes;
 
     @ManyToMany

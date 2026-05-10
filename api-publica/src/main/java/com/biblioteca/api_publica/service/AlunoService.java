@@ -3,6 +3,7 @@ package com.biblioteca.api_publica.service;
 import com.biblioteca.api_publica.domain.dto.AlunoDTO;
 import com.biblioteca.api_publica.domain.model.Aluno;
 import com.biblioteca.api_publica.domain.model.Autor;
+import com.biblioteca.api_publica.domain.model.Avaliacao;
 import com.biblioteca.api_publica.domain.model.Disciplina;
 import com.biblioteca.api_publica.exceptions.ApiException;
 import com.biblioteca.api_publica.repository.AlunoRepository;
@@ -121,6 +122,18 @@ public class AlunoService {
             // Mapeamento manual da Editora
             if (livro.getEditora() != null) {
                 dto.setNomeEditora(livro.getEditora().getNome());
+            }
+
+            // Mapeamento 
+            if (livro.getAvaliacoes() != null && !livro.getAvaliacoes().isEmpty()) {
+                double media = livro.getAvaliacoes().stream()
+                        .mapToInt(Avaliacao::getNota)
+                        .average()
+                        .orElse(0.0);
+
+                dto.setMediaAvaliacao(Math.round(media * 10.0) / 10.0);
+            } else {
+                dto.setMediaAvaliacao(0.0);
             }
 
             return dto;

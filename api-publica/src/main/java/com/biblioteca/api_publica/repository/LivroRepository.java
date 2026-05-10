@@ -16,4 +16,17 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
 
     @Query("SELECT l FROM Livro l JOIN l.avaliacoes a GROUP BY l.id ORDER BY AVG(a.nota) DESC")
     List<Livro> findTopRatedBooks(Pageable pageable);
+
+    //Mais Populares: Ordenado pela QUANTIDADE de avaliações (COUNT)
+    @Query("SELECT l FROM Livro l JOIN l.avaliacoes a GROUP BY l.id ORDER BY COUNT(a) DESC")
+    List<Livro> findPopularBooks(Pageable pageable);
+
+    //Busca por Disciplina
+    List<Livro> findByDisciplinasId(Long disciplinaId);
+
+    //Busca por Autor
+    List<Livro> findByAutoresId(Long autorId);
+
+    //Busca por Editora
+    List<Livro> findByEditoraId(Long editoraId);
 }

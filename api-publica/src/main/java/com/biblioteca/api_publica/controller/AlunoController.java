@@ -22,26 +22,31 @@ public class AlunoController {
     private AlunoService service;
 
     @PostMapping
+    @Operation(summary = "Cadastra um novo aluno")
     public ResponseEntity<AlunoDTO> create(@Valid @RequestBody AlunoDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @GetMapping
+    @Operation(summary = "Busca todos os alunos")
     public ResponseEntity<List<AlunoDTO>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Busca um aluno pelo Id")
     public ResponseEntity<AlunoDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Atualiza um aluno")
     public ResponseEntity<AlunoDTO> update(@PathVariable Long id, @Valid @RequestBody AlunoDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Remove um aluno")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

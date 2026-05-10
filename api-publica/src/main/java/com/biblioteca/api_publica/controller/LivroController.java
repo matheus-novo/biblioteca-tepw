@@ -58,7 +58,7 @@ public class LivroController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Funcionalidade Extra: Busca por palavra-chave no resumo")
+    @Operation(summary = "Busca por palavra-chave no resumo")
     @GetMapping("/pesquisa")
     public ResponseEntity<List<LivroDTO>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(service.searchByResumo(keyword));
@@ -69,4 +69,29 @@ public class LivroController {
     public ResponseEntity<List<LivroDTO>> getTop10() {
         return ResponseEntity.ok(service.getTop10Books());
     }
+
+    @GetMapping("/popular")
+    @Operation(summary = "Lista os livros com maior número de interações/avaliações")
+    public ResponseEntity<List<LivroDTO>> getPopular(@RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(service.getPopular(limit));
+    }
+
+    @GetMapping("/disciplina/{id}")
+    @Operation(summary = "Busca livros vinculados a uma disciplina específica")
+    public ResponseEntity<List<LivroDTO>> findByDisciplina(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findByDisciplina(id));
+    }
+
+    @GetMapping("/autor/{id}")
+    @Operation(summary = "Busca todos os livros de um autor")
+    public ResponseEntity<List<LivroDTO>> findByAutor(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findByAutor(id));
+    }
+
+    @GetMapping("/editora/{id}")
+    @Operation(summary = "Busca todos os livros publicados por uma editora")
+    public ResponseEntity<List<LivroDTO>> findByEditora(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findByEditora(id));
+    }
+
 }
